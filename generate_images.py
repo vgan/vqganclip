@@ -35,6 +35,9 @@ get_models.py (--list | --all | -d (<model name>)+)
 
 from extra import *
 from subprocess import Popen, PIPE
+from datetime import datetime
+strTime = datetime.now()
+strTime = strTime.strftime('%Y%m%d%H%M%S')
 
 def sinc(x):
     return torch.where(x != 0, torch.sin(math.pi * x) / (math.pi * x), x.new_ones([]))
@@ -233,7 +236,7 @@ def generate_images(
         overwrite=False
     ):
     model_name = model
-    experiment_name = to_experiment_name(prompts)
+    experiment_name = to_experiment_name(prompts) + "_" + strTime
     experiment_folder = Path(outputs_folder) / experiment_name
     os.makedirs(experiment_folder, exist_ok=overwrite)
     os.makedirs(experiment_folder / "steps", exist_ok=overwrite)
