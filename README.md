@@ -1,4 +1,4 @@
-# VQGAN_CLIP_docker
+# vqganclip
 Docker for VQGAN+CLIP (z+quantize method)
 
 # A. Run Container
@@ -44,7 +44,7 @@ python get_models.py --all
 ```
 
 
-Go to [localhost:8888](http://localhost:8888) and enter to the `VQGAN_CLIP_docker` folder.
+Go to [localhost:8888](http://localhost:8888) and enter to the `vqganclip` folder.
 
 ## 3. Run script
 
@@ -148,8 +148,8 @@ tsp -N <number of jobs>
 Replace `<models absolute path>` and `<outputs absolute path>` with your host paths.
 
 ```bash
-git clone "https://github.com/vgan/vqganclip_docker"
-cd vqganclip_docker
+git clone "https://github.com/vgan/vqganclip"
+cd vqganclip
 sudo docker build . --tag vgan/vqgan_clip:latest
 HOST_MODELS="<models absolute path>"
 HOST_OUTPUT="<outputs absolute path>"
