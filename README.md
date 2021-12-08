@@ -9,11 +9,11 @@ Replace `<models absolute path>` and `<outputs absolute path>` with paths from y
 HOST_MODELS="<models absolute path>"
 HOST_OUTPUT="<outputs absolute path>"
 HOST_PORT=8888
-sudo docker run --name vqgan_clip --gpus all --rm -it\
+sudo docker run --name vqganclip --gpus all --rm -it\
         -p $HOST_PORT:8888 \
         -v "$HOST_MODELS:/tf/models"\
         -v "$HOST_OUTPUT:/tf/outputs"\
-        sborquez/vqgan_clip:latest\
+        vgan/vqganclip:latest\
         bash
 ```
 
@@ -148,17 +148,17 @@ tsp -N <number of jobs>
 Replace `<models absolute path>` and `<outputs absolute path>` with your host paths.
 
 ```bash
-git clone "https://github.com/sborquez/VQGAN_CLIP_docker"
-cd VQGAN_CLIP_docker
-sudo docker build . --tag sborquez/vqgan_clip:latest
+git clone "https://github.com/vgan/vqganclip_docker"
+cd vqganclip_docker
+sudo docker build . --tag vgan/vqgan_clip:latest
 HOST_MODELS="<models absolute path>"
 HOST_OUTPUT="<outputs absolute path>"
 HOST_PORT=8888
-sudo docker run --name vqgan_clip --gpus all --rm -it -p 8888:8888 \
+sudo docker run --name vqganclip --gpus all --rm -it -p 8888:8888 \
         -p $HOST_PORT:8888 \
         -v "$(pwd):/tf/src"\
         -v "$HOST_MODELS:/tf/models"\
         -v "$HOST_OUTPUT:/tf/outputs"\
-        sborquez/vqgan_clip:latest\
+        vgan/vqgan_clip:latest\
         bash
 ```
