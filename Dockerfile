@@ -8,9 +8,9 @@ RUN pip install ftfy regex tqdm omegaconf pytorch-lightning
 RUN pip install imageio imageio-ffmpeg pandas seaborn kornia einops==0.3.0 transformers==4.3.1
 RUN apt install -y task-spooler vim
 RUN git clone https://github.com/vgan/vqganclip.git
-RUN chmod u+x VQGAN_CLIP_docker/start_jupyter_notebook.sh
-RUN chmod u+x VQGAN_CLIP_docker/enqueue_generate_images.sh
+RUN chmod u+x vqganclip/start_jupyter_notebook.sh
+RUN chmod u+x vqganclip/enqueue_generate_images.sh
 RUN mkdir -p "/root/.cache/torch/hub/checkpoints"
 RUN curl "https://download.pytorch.org/models/vgg16-397923af.pth" -o "/root/.cache/torch/hub/checkpoints/vgg16-397923af.pth"
-WORKDIR "/tf/VQGAN_CLIP_docker"
+WORKDIR "/tf/vqganclip"
 ADD VERSION .
