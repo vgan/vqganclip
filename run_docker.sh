@@ -7,5 +7,5 @@ sudo docker run --name vqgan_clip --gpus all --rm -it -p $HOST_PORT:8888 \
         -v "$(pwd):/tf/src" \
         -v "$HOST_MODELS:/tf/models" \
         -v "$HOST_OUTPUT:/tf/outputs" \
-        sborquez/vgan:latest\
+        vgan/vgan:latest\
         bash
