@@ -10,6 +10,7 @@ RUN apt install -y task-spooler vim
 RUN git clone https://github.com/vgan/vqganclip.git
 RUN chmod u+x vqganclip/start_jupyter_notebook.sh
 RUN chmod u+x vqganclip/enqueue_generate_images.sh
+RUN chmod u+x vqganclip/aiartbot.py
 RUN mkdir -p "/root/.cache/torch/hub/checkpoints"
 RUN curl "https://download.pytorch.org/models/vgg16-397923af.pth" -o "/root/.cache/torch/hub/checkpoints/vgg16-397923af.pth"
 RUN ln -s /mnt/vqganclip/models /tf/
