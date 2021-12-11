@@ -230,7 +230,7 @@ def to_experiment_name(prompts):
 def to_text(prompts):
     return " ".join(prompts).strip().replace(".", " ")\
         .replace("-", " ").replace(",", " ")\
-        .replace("|", " -modifier ")
+        .replace("|", ", ")
 
 def generate_images(
         prompts, model, outputs_folder, models_folder, iterations=200, image_prompts=[], 
@@ -345,25 +345,21 @@ def generate_images(
 def generateText():
     style = random.choice(["Roger Dean",
         "Moebius",
-        "Druillet",
         "H.R. Giger",
         "Hieronymus Bosch",
-        "Hayao Miyazaki",
+        "Anime",
         "Monet",
         "Picasso",
         "Dali",
+        "Moebius",
+        "Moebius",
+        "Moebius",
+        "Moebius",
         "Michelangelo",
         "Matisse",
         "Van Gogh",
-        "Rembrandt",
         "Mayan",
         "Aztec",
-        "Art Decco",
-        "Art Nouveau",
-        "Brutalist",
-        "Soviet",
-        "Modernism",
-        "Post Modernism",
         "Trending on Art Station",
         "a vintage oil painting",
         "a charcoal drawing",
@@ -374,20 +370,18 @@ def generateText():
         "vaporwave"])
 
     subject = random.choice(["a little girl",
-        "a little boy",
-        "a dolphin",
-        "a baby",
+        "children",
+        "snakes",
+        "a child",
         "Guy Fieri",
         "Sonic the hedgehog",
         "a wizard",
         "a dragon",
-        "a duck",
+        "elvis",
         "a cat",
-        "a flock of sheep",
+        "an alien",
         "snakes",
         "a crow",
-        "kirby",
-        "Ronald Mcdonald",
         "Gritty",
         "a cowboy",
         "an elf",
@@ -405,9 +399,10 @@ def generateText():
         "god",
         "the devil",
         "satan",
+        "angels",
+        "demons",
         "a robot",
-        "a spider",
-        "a tank"])
+        "a cow"])
 
     modifier = random.choice(["",
         "",
@@ -423,41 +418,55 @@ def generateText():
         "",
         "",
         "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "|stained glass",
+        "|crystal matrix",
+        "|detailed",
         "|apocalyptic",
         "|glowing",
         "|faded",
         "|psychedelic",
         "|surreal",
         "|abandoned",
-        "|bleak",
         "",
         "",
         "",
         ""])
 
-    scene = random.choice(["in a medieval castle",
-        "in the countryside",
-        "in the mountains",
-        "in a clearing",
-        "at a lakeside resort",
-        "at a farm",
-        "in a barn",
-        "on an island",
-        "at the mall",
-        "on the couch",
-        "on a boat",
-        "sitting at a table",
-        "fishing in a stream",
-        "walking in the city",
+    scene = random.choice(["medieval castle",
+        "countryside",
+        "mountains",
+        "lakeside resort",
+        "farm",
+        "barn",
+        "island",
+        "mall",
+        "1930",
+        "1940s",
+        "1950s",
+        "1960s",
+        "1980s",
+        "1990s",
+        "1900s",
+        "ship",
+        "victorian",
+        "creek",
+        "city",
         "at the gates of hell",
         "at the gates of heaven",
         "at the gates of valhalla",
-        "in a cavern",
-        "in ancient rome",
-        "at the great pyramids",
-        "at the circus",
-        "at mcdonalds",
-        "in a grassy field"])
+        "cavern",
+        "ancient rome",
+        "great pyramids",
+        "circus",
+        "mcdonalds",
+        "grassy field"])
 
     #text = " ".join([subject,scene,"in the style of",style])
     text = [subject,scene,"in the style of",style,modifier]
@@ -477,7 +486,8 @@ def sendToInterwebs(image,text):
         access_token = access_token
     )
     #try:
-    toot_text = text
+    #toot_text = text
+    toot_text = ""
     media_dict = mastodon.media_post(image,"image/png")
     mastodon.status_post(status=toot_text, media_ids=[media_dict,], sensitive=False)
     #except:
