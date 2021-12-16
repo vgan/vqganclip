@@ -455,6 +455,7 @@ def generateText():
         "1980s",
         "1990s",
         "1900s",
+        "renaissance",
         "ship",
         "victorian",
         "creek",
@@ -486,14 +487,10 @@ def sendToInterwebs(image,text):
         client_secret=client_secret,
         access_token = access_token
     )
-    #try:
-    #toot_text = text
     toot_text = ""
-    media_dict = mastodon.media_post(image,"image/png")
+    description = text
+    media_dict = mastodon.media_post(image,"image/png",description)
     mastodon.status_post(status=toot_text, media_ids=[media_dict,], sensitive=False)
-    #except:
-    #    print("tooting failed")
-
 
 def doTheDamnedThing():
     prompts = generateText()
