@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Licensed under the MIT License
 
-# Copyright (c) 2021 Katherine Crowson
+# Copyright (c) 2021 Steve Cvar
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# This script is based on code originally created by Katherine Crowson and Sebastián Bórquez
+
 """
-VQGAN+CLIP
-Original file is located at
-    https://colab.research.google.com/drive/17dZl__DaU2kYelWwbtygn-jSeepzO0Bw
-
-Simplified version is located at
-    https://colab.research.google.com/drive/17dZl__DaU2kYelWwbtygn-jSeepzO0Bw?usp=sharing
-
 **Download pre-trained models:**
 get_models.py (--list | --all | -d (<model name>)+)
 """
@@ -43,12 +38,10 @@ strTime = strTime.strftime('%Y%m%d%H%M%S')
 def sinc(x):
     return torch.where(x != 0, torch.sin(math.pi * x) / (math.pi * x), x.new_ones([]))
 
-
 def lanczos(x, a):
     cond = torch.logical_and(-a < x, x < a)
     out = torch.where(cond, sinc(x) * sinc(x/a), x.new_zeros([]))
     return out / out.sum()
-
 
 def ramp(ratio, width):
     n = math.ceil(width / ratio + 1)
@@ -58,7 +51,6 @@ def ramp(ratio, width):
         out[i] = cur
         cur += ratio
     return torch.cat([-out[1:].flip([0]), out])[1:-1]
-
 
 def resample(input, size, align_corners=True):
     n, c, h, w = input.shape
@@ -111,7 +103,6 @@ def vector_quantize(x, codebook):
     indices = d.argmin(-1)
     x_q = F.one_hot(indices, codebook.shape[0]).to(d.dtype) @ codebook
     return ReplaceGrad.apply(x_q, x)
-
 
 class Prompt(nn.Module):
     def __init__(self, embed, weight=1., stop=float('-inf')):
@@ -195,33 +186,6 @@ def resize_image(image, out_size):
 def synth(z, model):
     z_q = vector_quantize(z.movedim(1, 3), model.quantize.embedding.weight).movedim(3, 1)
     return ClampWithGrad.apply(model.decode(z_q).add(1).div(2), 0, 1)
-
-
-def create_video(last_frame, experiment_folder, seconds=15):
-    """Generar video del proceso resultante"""
-    init_frame = 1 #Este es el frame donde el vídeo empezará
-    #last_frame = i #Puedes cambiar i a el número del último frame que quieres generar. It will raise an error if that number of frames does not exist.
-    experiment_folder = Path(experiment_folder)
-    min_fps = 10
-    max_fps = 30
-
-    total_frames = last_frame-init_frame
-
-    length = seconds #Tiempo deseado del vídeo en segundos
-
-    frames = []
-    for i in tqdm(range(init_frame,last_frame), total=total_frames, desc="Procesando frames"): #
-        frames.append(Image.open(experiment_folder / "steps" / f"{str(i).zfill(3)}.png"))
-    #fps = last_frame/10
-    fps = np.clip(total_frames/length,min_fps,max_fps)
-    p = Popen(['ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'png', '-r',\
-        str(fps), '-i', '-', '-vcodec', 'libx264', '-r', str(fps), '-pix_fmt',\
-        'yuv420p', '-crf', '17', '-preset', 'veryslow', experiment_folder / 'video.mp4'],\
-        stdin=PIPE)
-    for im in tqdm(frames, desc="Asignando frames"):
-        im.save(p.stdin, 'PNG')
-    p.stdin.close()
-    p.wait()
 
 def to_experiment_name(prompts):
     return " ".join(prompts).strip().replace(".", " ")\
@@ -342,136 +306,446 @@ def generate_images(
     sendToInterwebs(image,text)
     return i
 
-
 def generateText():
-    style = random.choice(["Roger Dean",
-        "Moebius",
-        "H.R. Giger",
-        "Hieronymus Bosch",
-        "Anime",
-        "Monet",
-        "Picasso",
-        "Dali",
-        "Moebius",
-        "Moebius",
-        "Moebius",
-        "Moebius",
-        "Michelangelo",
-        "Matisse",
-        "Van Gogh",
-        "Mayan",
-        "Aztec",
-        "Trending on Art Station",
-        "a vintage oil painting",
+    style = random.choice([
         "a charcoal drawing",
         "a line drawing",
-        "minimalist",
-        "a watercolor painting",
         "a vintage black velvet painting",
-        "vaporwave"])
+        "a vintage oil painting",
+        "a watercolor painting",
+        "Abstract",
+        "Anime",
+        "Art Deco",
+        "Art Nouveau",
+        "Aztec",
+        "Baroque",
+        "Constructivism",
+        "Cubism",
+        "Cyberpunk",
+        "Dadaism",
+        "Dali",
+        "Expressionism",
+        "Figurative art",
+        "Geometric",
+        "Gothic",
+        "H.R. Giger",
+        "Hieronymus Bosch",
+        "Impressionism",
+        "Matisse",
+        "Mayan",
+        "Michelangelo",
+        "minimalist",
+        "Moebius",
+        "Moebius",
+        "Moebius",
+        "Moebius",
+        "Moebius",
+        "Monet",
+        "Picasso",
+        "Pop Art",
+        "Portraiture",
+        "Realism",
+        "Retro-Futurism",
+        "Roger Dean",
+        "Social Realism",
+        "Socialist Realism",
+        "Still Life",
+        "Surrealist",
+        "Symbolism",
+        "Trending on Art Station",
+        "Ukiyo-E",
+        "Van Gogh",
+        "vaporwave",
+        ])
 
-    subject = random.choice(["a little girl",
-        "children",
-        "snakes",
-        "a child",
-        "Guy Fieri",
-        "Sonic the hedgehog",
-        "a wizard",
-        "a dragon",
-        "elvis",
-        "a cat",
-        "an alien",
-        "snakes",
-        "a crow",
-        "Gritty",
-        "a cowboy",
-        "an elf",
-        "a clown",
-        "a frog",
-        "a pidgeon",
-        "a squirrel",
-        "a hamster",
-        "Gumby",
-        "a man",
-        "a pack of wolves",
-        "a Muppet",
+    subject = random.choice([
         "a bear",
-        "Snoopy",
-        "god",
-        "the devil",
-        "satan",
-        "angels",
-        "demons",
+        "a blacksmith",
+        "a cat",
+        "a clown",
+        "a cow",
+        "a cowboy",
+        "a crow",
+        "a dragon",
+        "a frog",
+        "a ghost",
+        "a hammer",
+        "a hamster",
+        "a high speed car chase",
+        "a little girl",
+        "a magician",
+        "a man",
+        "a moose",
+        "a mouse",
+        "a Muppet",
+        "a parade",
         "a robot",
-        "a cow"])
+        "a space station",
+        "a squirrel",
+        "a sword",
+        "a tardigrade",
+        "a vacuum",
+        "a volcano",
+        "a wizard",
+        "a wizard pondering an orb",
+        "album cover",
+        "an alien",
+        "an elf",
+        "angels",
+        "bank robbers",
+        "bees",
+        "beetles",
+        "bones",
+        "bookshelves",
+        "bridges",
+        "camels",
+        "carnivorous plants",
+        "cats",
+        "cavemen",
+        "chupacabra",
+        "clocks",
+        "coffins",
+        "deep sea fish",
+        "demons",
+        "detectives ",
+        "dogs",
+        "dumptrucks",
+        "elves",
+        "elvis",
+        "fancy jewelry",
+        "ferns",
+        "ghosts",
+        "giraffes",
+        "goblins",
+        "god",
+        "godzilla",
+        "hackers",
+        "handcuffs",
+        "jellyfish",
+        "lizard men",
+        "luigi",
+        "lobsters",
+        "mad scientists",
+        "mariachis",
+        "monsters",
+        "muffins",
+        "mutants",
+        "nuclear explosion",
+        "pancakes",
+        "Pyramids",
+        "raccoons",
+        "satan",
+        "scarabs",
+        "scorpions",
+        "sea shells",
+        "sharks",
+        "skiers",
+        "skunks",
+        "smartphones",
+        "snakes"
+        "Snoopy",
+        "Super Mario",
+        "sushi",
+        "tacos",
+        "teenagers",
+        "the devil",
+        "the pope",
+        "tigers",
+        "time travelers",
+        "tombstones",
+        "tractors",
+        "trains",
+        "Transformers",
+        "turkeys",
+        "UFO abduction",
+        "UFOs",
+        "umbrellas",
+        "a Wienermobile",
+        "wario"
+        ])
 
-    modifier = random.choice(["",
-        "",
-        "",
-        "",
-        "|illuminated",
-        "|dark",
-        "|sunset",
-        "|sunrise",
-        "|winter",
-        "|autumn",
-        "|fall",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "|stained glass",
-        "|crystal matrix",
-        "|detailed",
-        "|apocalyptic",
-        "|glowing",
-        "|faded",
-        "|psychedelic",
-        "|surreal",
+    modifier = random.choice([
         "|abandoned",
+        "|after the rain",
+        "|autumn",
+        "|black and white",
+        "|blue tint",
+        "|crystal matrix",
+        "|dark",
+        "|dim",
+        "|dry",
+        "|earth tones",
+        "|faded",
+        "|fall",
+        "|futuristic",
+        "|glowing",
+        "|green tint",
+        "|heavy rain",
+        "|high contrast",
+        "|illuminated",
+        "|morning",
+        "|neon",
+        "|night",
+        "|pastels",
+        "|shining",
+        "|shiny",
+        "|spooky",
+        "|stained glass",
+        "|sunrise",
+        "|sunset",
+        "|wet",
+        "|winter",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
         "",
         "",
         "",
         ""])
 
-    scene = random.choice(["medieval castle",
-        "countryside",
-        "mountains",
-        "lakeside resort",
-        "farm",
-        "barn",
-        "island",
-        "mall",
-        "1930",
-        "1940s",
-        "1950s",
-        "1960s",
-        "1980s",
-        "1990s",
-        "1900s",
-        "renaissance",
-        "ship",
-        "victorian",
-        "creek",
-        "city",
-        "at the gates of hell",
+    scene = random.choice([
+        "at a concert",
+        "at a dinner party",
+        "at a dive bar",
+        "at a grassy field",
+        "at a pachinko parlor",
+        "at a pool party",
+        "at the circus",
         "at the gates of heaven",
+        "at the gates of hell",
         "at the gates of valhalla",
-        "cavern",
+        "at the great pyramids",
+        "at the mall",
+        "by a creek",
+        "in a barn",
+        "in a black hole",
+        "in a castle",
+        "in a cavern",
+        "in a datacenter",
+        "in a desert",
+        "in a diner",
+        "in a factory",
+        "in a gothic cathedral",
+        "in a graveyard",
+        "in a hidden tunnel",
+        "in a jungle",
+        "in a medieval castle",
+        "in a post-apocalyptic city",
+        "in a secret passage",
+        "in a swamp",
+        "in an arcade",
+        "in ancient Egypt",
+        "in ancient Greece",
+        "in ancient rome",
+        "in Athens",
+        "in Bangkok",
+        "in Belgrade",
+        "in Bishkek",
+        "in Bombay",
+        "in Bucharest",
+        "in Buenos Aires",
+        "in Caracas",
+        "in Ethiopia",
+        "in Havana",
+        "in Helsinki",
+        "in Hollywood",
+        "in Istanbul",
+        "in Krakow",
+        "in Kyiv",
+        "in Las Vegas",
+        "in Medellin",
+        "in Mexico City",
+        "in Minsk",
+        "in Montevideo",
+        "in Odessa",
+        "in Paris",
+        "in Prague",
+        "in Saigon",
+        "in Samara Russia",
+        "in Sao Paolo",
+        "in Shanghai",
+        "in Siberia",
+        "in Sintra",
+        "in Skopje",
+        "in soviet russia",
+        "in space",
+        "in Taipei",
+        "in Tallinn",
+        "in Tashkent",
+        "in Tbilisi",
+        "in the city",
+        "in the countryside",
+        "in the metro",
+        "in the mountains",
+        "in the ocean",
+        "in Tokyo",
+        "in Ulaanbaatar",
+        "inside a machine",
+        "lakeside resort",
+        "on a battleship",
+        "on a cloud",
+        "on a cruiseship",
+        "on a farm",
+        "on a pier",
+        "on a ship",
+        "on a train",
+        "on a tropical island",
+        "on an island",
+        "on Mars",
+        "on the beach",
+        "on the Moon"
+        ])
+    place = random.choice([
+        "a barn",
+        "a black hole",
+        "a castle",
+        "a cavern",
+        "a datacenter",
+        "a desert",
+        "a diner",
+        "a dinner party",
+        "a factory",
+        "a Galaxy",
+        "a gothic cathedral",
+        "a grassy field",
+        "a graveyard",
+        "a hidden tunnel",
+        "a jungle",
+        "a medieval castle",
+        "a pachinko parlor",
+        "a pool party",
+        "a post-apocalyptic city",
+        "a secret passage",
+        "a swamp",
+        "an arcade",
+        "ancient Egypt",
+        "ancient Greece",
         "ancient rome",
-        "great pyramids",
-        "circus",
-        "mcdonalds",
-        "grassy field"])
+        "Athens",
+        "Bangkok",
+        "Belgrade",
+        "Bishkek",
+        "Bombay",
+        "Bucharest",
+        "Buenos Aires",
+        "by a creek",
+        "Caracas",
+        "Constructivist Architecture",
+        "cyberspace",
+        "Ethiopia",
+        "Havana",
+        "Helsinki",
+        "Hollywood",
+        "inside a machine",
+        "Istanbul",
+        "Krakow",
+        "Kyiv",
+        "lakeside resort",
+        "Las Vegas",
+        "Medellin",
+        "Metabolist Architecture",
+        "Mexico City",
+        "Minsk",
+        "Modernist Architecture",
+        "Montevideo",
+        "Odessa",
+        "on a battleship",
+        "on a cloud",
+        "on a cruiseship",
+        "on a farm",
+        "on a pier",
+        "on a ship",
+        "on a train",
+        "on a tropical island",
+        "on an island",
+        "on Mars",
+        "on stage at a concert",
+        "on the beach",
+        "on the Moon",
+        "Organic Brutalist Architecture",
+        "Paris",
+        "Postmodernist Architecture",
+        "Prague",
+        "Saigon",
+        "Samara Russia",
+        "Sao Paolo",
+        "Shanghai",
+        "Siberia",
+        "Sintra",
+        "Skopje",
+        "soviet russia",
+        "Taipei",
+        "Tallinn",
+        "Tangier",
+        "Tashkent",
+        "Tbisili",
+        "the circus",
+        "the city",
+        "the countryside",
+        "the gates of heaven",
+        "the gates of hell",
+        "the gates of valhalla",
+        "the great pyramids",
+        "the Interzone",
+        "the mall",
+        "the metro",
+        "the mountains",
+        "Tokyo",
+        "Ulaanbaatar"
+        ])
 
-    #text = " ".join([subject,scene,"in the style of",style])
-    text = [subject,scene,"in the style of",style,modifier]
+    preset_scene = random.choice([
+        "1960s brutalist church interior",
+        "1960s brutalist corridor",
+        "1960s brutalist hotel",
+        "1960s brutalist hotel |plants",
+        "1960s modernist church interior",
+        "1970s airbrushed tiger",
+        "1970s dragon airbrushed",
+        "1980s airbrushed fantasy movie poster",
+        "1980s airbrushed galaxy",
+        "1980s airbrushed knight",
+        "1980s airbrushed movie poster",
+        "1980s airbrushed space",
+        "1990s taco bell dining area",
+        "a space garden",
+        "a surfer on a wave airbrushed",
+        "album cover airbrushed",
+        "animatronic abraham lincoln",
+        "black metal album cover |evil",
+        "Electron Microscopy dust mites",
+        "Electron Microscopy spores",
+        "Electron Microscopy tardigrade",
+        "Electron Microscopy virus",
+        "plants in a greenhouse at sunset",
+        "unusual roadside attraction|japan|weird",
+        "unusual roadside attraction|route 66",
+        "unusual roadside attraction|weird"
+        ])
+    # define templates    
+    sub_scene_style_mod = [subject,scene,"in the style of",style,modifier]
+    sub_scene_style = [subject,scene,"in the style of",style]
+    place_style_mod =[place,"in the style of",style,modifier]
+    place_style = [place,"in the style of",style]
+    preset = [preset_scene]
+
+    template = random.choice([preset,sub_scene_style_mod,sub_scene_style,place_style_mod,place_style])
+
+    text = template
     return text
 
 def sendToInterwebs(image,text):
@@ -491,6 +765,19 @@ def sendToInterwebs(image,text):
     description = text
     media_dict = mastodon.media_post(image,"image/png",description)
     mastodon.status_post(status=toot_text, media_ids=[media_dict,], sensitive=False)
+    # Twitter
+    import tweepy
+    twitter_consumer_key = os.environ['TWITTER_CONSUMER_KEY']
+    twitter_consumer_secret = os.environ['TWITTER_CONSUMER_SECRET']
+    twitter_token_key = os.environ['TWITTER_TOKEN_KEY']
+    twitter_token_secret = os.environ['TWITTER_TOKEN_SECRET']
+    auth = tweepy.OAuthHandler(twitter_consumer_key, twitter_consumer_secret)
+    auth.set_access_token(twitter_token_key, twitter_token_secret)
+    api = tweepy.API(auth)
+    imageObj = open(image)
+    upload = api.media_upload(filename=image)
+    media_ids = [upload.media_id_string]
+    result = api.update_status(media_ids=media_ids, status="")
 
 def doTheDamnedThing():
     prompts = generateText()
