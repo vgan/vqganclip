@@ -297,7 +297,7 @@ def generate_images(
     except KeyboardInterrupt:
         print("Aborted")
 
-    image = str('/tf/aiartbot/outputs/' + experiment_name + '/progress.png')
+    image = str('/tf/vqganclip/outputs/' + experiment_name + '/progress.png')
     text = to_text(prompts)
     sendToInternet(image,text,model_name)
     return i
@@ -402,7 +402,7 @@ def main():
     generated = generateText()
     prompts = generated[0]
     model_name = generated[1]
-    models_folder = "/tf/aiartbot/models"
-    outputs_folder = "/tf/aiartbot/outputs"
+    models_folder = "/tf/vqganclip/models"
+    outputs_folder = "/tf/vqganclip/outputs"
     generate_images(prompts=prompts,model=model_name,outputs_folder=outputs_folder,models_folder=models_folder)
 main()
