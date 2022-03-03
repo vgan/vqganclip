@@ -358,7 +358,7 @@ def generateText():
         override = wsheet.col_values(override_col)[1]
         if len(override) != 0:
                 print("override active! value is: " + override)
-                wsheet.update('G2',"")
+                wsheet.update('F2',"")
                 text = [override]
     except:
         print(template)
@@ -381,7 +381,11 @@ def sendToInternet(image,text,model_name):
     toot_text = ""
     description = text + "\nModel: " + model_name
     media_dict = mastodon.media_post(image,"image/png",description)
-    mastodon.status_post(status=toot_text, media_ids=[media_dict,], sensitive=False)
+    
+    if "Giger" in text:
+        mastodon.status_post(spoiler_text="H.R. Giger related image prompt", status=toot_text, media_ids=[media_dict,], sensitive=False)
+    else:
+        mastodon.status_post(status=toot_text, media_ids=[media_dict,], sensitive=False)
     # Twitter
     import tweepy
     twitter_consumer_key = os.environ['TWITTER_CONSUMER_KEY']
