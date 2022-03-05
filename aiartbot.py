@@ -194,7 +194,7 @@ def to_text(prompts):
         .replace(" |", ", ")
 
 def generate_images(
-        prompts, model, outputs_folder, models_folder, iterations=200, image_prompts=[], 
+        prompts, model, outputs_folder, models_folder, iterations=160, image_prompts=[], 
         noise_prompt_seeds=[], noise_prompt_weights=[], size=[640, 480],
         init_image=None, init_weight=0., clip_model='ViT-B/32', 
         step_size=0.1, cutn=64, cut_pow=1., display_freq=5, seed=None,
