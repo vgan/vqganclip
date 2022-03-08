@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:latest-gpu-jupyter
+FROM tensorflow/tensorflow
 RUN apt update
 RUN apt install -y git vim curl
 RUN git clone https://github.com/vgan/vqganclip.git
@@ -13,3 +13,4 @@ RUN ln -s /mnt/vqganclip/models /tf/vqganclip/
 RUN ln -s /mnt/vqganclip/outputs /tf/vqganclip/
 WORKDIR "/tf/vqganclip"
 ADD VERSION .
+CMD "/tf/vqganclip/aiartbot.py"
